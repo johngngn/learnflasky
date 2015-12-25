@@ -1,3 +1,5 @@
+#-*- coding:utf8 -*-
+#coding=utf-8
 import os
 from flask import Flask, render_template, session, redirect, url_for, flash
 from flask.ext.script import Manager
@@ -63,12 +65,19 @@ def internal_server_error(e):
 def index():
     form = NameForm()
     if form.validate_on_submit():
-        old_name = session.get('name')
-        if old_name is not None and old_name!=form.name.data:
-            flash('Looks like you want to change your name?')
+        user = User.query.filter_by(username=form.name.data).first()
+        if user is None:         #如果不存在则将数据插入数据库
+            user = User(username=form.name.data)
+            db.session.add(user)
+            session['known'] = False
+        else:
+            session['known'] = True
         session['name'] = form.name.data
         return redirect(url_for('index'))
-    return render_template('index.html', form=form, name=session.get('name'), current_time=datetime.utcnow())
+    return render_template('index.html',
+                           form=form, name=session.get('name'),
+                           known=session.get('known', False),
+                           current_time=datetime.utcnow())
 
 
 @app.route('/user/<name>')
@@ -77,5 +86,4 @@ def user(name):
 
 
 if __name__ == '__main__':
-    db.create_all()
     manager.run()
