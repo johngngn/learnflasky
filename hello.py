@@ -10,6 +10,8 @@ from datetime import datetime
 from flask.ext.wtf import Form
 from wtforms import StringField, SubmitField
 from wtforms.validators import Required
+from flask.ext.script import Shell
+from flask.ext.migrate import Migrate, MigrateCommand
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -83,6 +85,14 @@ def index():
 @app.route('/user/<name>')
 def user(name):
     return render_template('user.html', name=name)
+
+
+def make_shell_content():
+    return dict(app=app, db=db, User=User, Role=Role)
+manager.add_command("shell", Shell(make_context=make_shell_content))
+
+migrate = Migrate(app, db)
+manager.add_command('db', MigrateCommand)
 
 
 if __name__ == '__main__':
