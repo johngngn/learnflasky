@@ -6,11 +6,13 @@ from flask.ext.moment import Moment
 from flask.ext.sqlalchemy import SQLAlchemy
 from config import config
 from flask.ext.mail import Mail
+from flask_debugtoolbar import DebugToolbarExtension
 
 bootstrap = Bootstrap()
 moment = Moment()
 db = SQLAlchemy()
 mail = Mail()
+toolbar = DebugToolbarExtension()
 
 
 def create_app(config_name):
@@ -27,6 +29,7 @@ def create_app(config_name):
     mail.init_app(app)
     moment.init_app(app)
     db.init_app(app)
+    toolbar.init_app(app)
 
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
