@@ -13,6 +13,7 @@ class Config:
     FLASKY_MAIL_SUBJECT_PREFIX = '[Flasky]'
     FLASKY_MAIL_SENDER = '290873309@163.com'
     FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
+    DEBUG_TB_INTERCEPT_REDIRECTS = False
 
     @staticmethod
     def init_app(app):
