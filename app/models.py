@@ -1,5 +1,6 @@
 #-*- coding:utf8 -*-
 #coding=utf-8
+from datetime import datetime
 from flask import current_app
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from . import db, login_manage
@@ -55,6 +56,11 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     email = db.Column(db.String(64), unique=True, index=True)
     confirmed = db.Column(db.Boolean, default=False)
+    name = db.Column(db.String(64))
+    location = db.Column(db.String(64))
+    about_me = db.Column(db.Text())
+    member_since = db.Column(db.DateTime(), default=datetime.utcnow)
+    last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -135,6 +141,10 @@ class User(UserMixin, db.Model):
     def is_administrator(self):
         return self.can(Permissions.ADMINISTER)
 
+    def ping(self):
+        self.last_seen = datetime.utcnow()
+        db.session.add(self)
+
     def __repr__(self):
         return 'User %r' % self.username
 
@@ -147,6 +157,7 @@ class AnonymousUser(AnonymousUserMixin):
         return False
 
 login_manage.anonymous_user = AnonymousUser
+
 
 @login_manage.user_loader
 def load_user(user_id):
