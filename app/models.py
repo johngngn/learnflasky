@@ -62,6 +62,7 @@ class User(UserMixin, db.Model):
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
 
+    #User类创建实例时会立即调用下面的构造函数
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         if self.role is None:
