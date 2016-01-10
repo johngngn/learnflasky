@@ -200,4 +200,5 @@ class UserModelTestCase(unittest.TestCase):
         db.session.add(u2)
         db.session.add(u3)
         db.session.commit()
+        print(u1.followers)
         self.assertTrue(u3.followers.count() == 2)
