@@ -1,8 +1,8 @@
 import unittest
 import time
-from app.models import User, Role, AnonymousUser, Permissions, Follow
-from app import db, create_app
 from datetime import datetime
+from app import create_app, db
+from app.models import User, AnonymousUser, Role, Permissions, Follow
 
 
 class UserModelTestCase(unittest.TestCase):
@@ -11,6 +11,7 @@ class UserModelTestCase(unittest.TestCase):
         self.app_context = self.app.app_context()
         self.app_context.push()
         db.create_all()
+        Role.insert_roles()
 
     def tearDown(self):
         db.session.remove()
@@ -82,32 +83,31 @@ class UserModelTestCase(unittest.TestCase):
         u = User(email='john@example.com', password='cat')
         db.session.add(u)
         db.session.commit()
-        token = u.generate_email_change_token('susan@example.com')
+        token = u.generate_email_change_token('susan@example.org')
         self.assertTrue(u.change_email(token))
-        self.assertTrue(u.email == 'susan@example.com')
+        self.assertTrue(u.email == 'susan@example.org')
 
     def test_invalid_email_change_token(self):
         u1 = User(email='john@example.com', password='cat')
-        u2 = User(email='susan@example.com', password='dog')
+        u2 = User(email='susan@example.org', password='dog')
         db.session.add(u1)
         db.session.add(u2)
         db.session.commit()
-        token = u1.generate_email_change_token('david@example.com')
+        token = u1.generate_email_change_token('david@example.net')
         self.assertFalse(u2.change_email(token))
-        self.assertTrue(u2.email == 'susan@example.com')
+        self.assertTrue(u2.email == 'susan@example.org')
 
     def test_duplicate_email_change_token(self):
         u1 = User(email='john@example.com', password='cat')
-        u2 = User(email='susan@example.com', password='dog')
+        u2 = User(email='susan@example.org', password='dog')
         db.session.add(u1)
         db.session.add(u2)
         db.session.commit()
         token = u2.generate_email_change_token('john@example.com')
         self.assertFalse(u2.change_email(token))
-        self.assertTrue(u2.email == 'susan@example.com')
+        self.assertTrue(u2.email == 'susan@example.org')
 
     def test_roles_and_permissions(self):
-        Role.insert_roles()
         u = User(email='john@example.com', password='cat')
         self.assertTrue(u.can(Permissions.WRITE_ARTICLES))
         self.assertFalse(u.can(Permissions.MODERATE_COMMENTS))
@@ -120,8 +120,10 @@ class UserModelTestCase(unittest.TestCase):
         u = User(password='cat')
         db.session.add(u)
         db.session.commit()
-        self.assertTrue((datetime.utcnow() - u.member_since).total_seconds() < 3)
-        self.assertTrue((datetime.utcnow() - u.last_seen).total_seconds() < 3)
+        self.assertTrue(
+            (datetime.utcnow() - u.member_since).total_seconds() < 3)
+        self.assertTrue(
+            (datetime.utcnow() - u.last_seen).total_seconds() < 3)
 
     def test_ping(self):
         u = User(password='cat')
@@ -165,8 +167,8 @@ class UserModelTestCase(unittest.TestCase):
         self.assertTrue(u1.is_following(u2))
         self.assertFalse(u1.is_followed_by(u2))
         self.assertTrue(u2.is_followed_by(u1))
-        self.assertTrue(u1.followed.count() == 1)
-        self.assertTrue(u2.followers.count() == 1)
+        self.assertTrue(u1.followed.count() == 2)
+        self.assertTrue(u2.followers.count() == 2)
         f = u1.followed.all()[-1]
         self.assertTrue(f.followed == u2)
         self.assertTrue(timestamp_before <= f.timestamp <= timestamp_after)
@@ -175,30 +177,13 @@ class UserModelTestCase(unittest.TestCase):
         u1.unfollow(u2)
         db.session.add(u1)
         db.session.commit()
-        self.assertTrue(u1.followed.count() == 0)
-        self.assertTrue(u2.followers.count() == 0)
-        self.assertTrue(Follow.query.count() == 0)
+        self.assertTrue(u1.followed.count() == 1)
+        self.assertTrue(u2.followers.count() == 1)
+        self.assertTrue(Follow.query.count() == 2)
         u2.follow(u1)
         db.session.add(u1)
         db.session.add(u2)
         db.session.commit()
         db.session.delete(u2)
         db.session.commit()
-        self.assertTrue(Follow.query.count() == 0)
-
-    def test_follow(self):
-        u1 = User(email='john@example.com', password='cat')
-        u2 = User(email='susan@example.org', password='dog')
-        u3 = User(email='haha@example.com', password='haha')
-        db.session.add(u1)
-        db.session.add(u2)
-        db.session.add(u3)
-        db.session.commit()
-        u1.follow(u3)
-        u2.follow(u3)
-        db.session.add(u1)
-        db.session.add(u2)
-        db.session.add(u3)
-        db.session.commit()
-        print(u1.followers)
-        self.assertTrue(u3.followers.count() == 2)
+        self.assertTrue(Follow.query.count() == 1)
