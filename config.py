@@ -14,6 +14,8 @@ class Config:
     FLASKY_MAIL_SENDER = '290873309@163.com'
     FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
     DEBUG_TB_INTERCEPT_REDIRECTS = False
+    FLASKY_POSTS_PER_PAGE = 20
+    FLASKY_FOLLOWERS_PER_PAGE = 50
 
     @staticmethod
     def init_app(app):
