@@ -16,6 +16,7 @@ class Config:
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     FLASKY_POSTS_PER_PAGE = 20
     FLASKY_FOLLOWERS_PER_PAGE = 50
+    FLASKY_COMMENTS_PER_PAGE = 30
 
     @staticmethod
     def init_app(app):
