@@ -1,5 +1,3 @@
-#-*- coding:utf8 -*-
-#coding=utf-8
 from flask.ext.wtf import Form
 from flask.ext.pagedown.fields import PageDownField
 from wtforms import StringField, SubmitField, TextAreaField, BooleanField, SelectField
@@ -42,7 +40,6 @@ class EditProfileAdminForm(Form):
         print(self.role.choices)
         self.user = user
 
-    #以下构造函数会自动验证表单
     def validate_email(self, field):
         if field.data != self.user.email and \
                 User.query.filter_by(email=field.data).first():

@@ -1,5 +1,4 @@
-#-*- coding:utf8 -*-
-#coding=utf-8
+
 import hashlib
 from markdown import markdown
 import bleach
@@ -28,8 +27,6 @@ class Role(db.Model):
     permissions = db.Column(db.Integer)
     users = db.relationship('User', backref='role', lazy='dynamic')
 
-    #这里是利用循环字典来创建角色，这样可以方便以后扩展这个角色字典
-    #循环体用角色名称代入查询数据库是否已经存在，否的话用Role类来创建新对象，再加入数据库
     @staticmethod
     def insert_roles():
         roles = {
@@ -118,7 +115,6 @@ class User(UserMixin, db.Model):
                 db.session.add(user)
                 db.session.commit()
 
-    #User类创建实例时会立即调用下面的构造函数
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         if self.role is None:
